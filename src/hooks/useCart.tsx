@@ -101,9 +101,21 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
         api.get("stock/" + productId)
         .then(response => {
           const newCart = cart.map(product => {
-            if (product.id === productId && response.data.amount > product.amount + amount)
-              product.amount += amount
-            return product
+              if (product.id === productId && response.data.amount > product.amount + amount){
+                product.amount += amount
+                return product
+              } else {
+                toast.warning("Quantidade fora de estoque", {
+                  position: "top-right",
+                  autoClose: 2000,
+                  hideProgressBar: true,
+                  closeOnClick: true,
+                  pauseOnHover: true,
+                  draggable: true,
+                  progress: undefined,
+                });
+                return product
+              }
           })
           setCart(newCart)
         })
