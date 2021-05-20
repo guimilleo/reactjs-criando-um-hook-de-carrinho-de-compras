@@ -34,18 +34,62 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
 
   const addProduct = async (productId: number) => {
     try {
-      // TODO
-    } catch {
-      // TODO
+      if (cart.find(product => product.id === productId))
+        throw new Error('Produto já adicionado no carrinho');
+      else
+        api.get("stock/" + productId)
+        .then(response => {
+          if(response.data.amount >= 1)
+            api.get("products/" + productId)
+              .then(response => { 
+                response.data['amount'] = 1
+                setCart([...cart, response.data])
+                toast.success('Produto adicionado com sucesso ao carrinho!', {
+                  position: "top-right",
+                  autoClose: 2000,
+                  hideProgressBar: true,
+                  closeOnClick: true,
+                  pauseOnHover: true,
+                  draggable: true,
+                  progress: undefined,
+                  });
+              })
+          else
+            throw new Error('Produto sem estoque :(');
+        })
+      
+    } catch (err) {
+      toast.error(err.message, {
+        position: "top-right",
+        autoClose: 2000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        });
     }
   };
 
   const removeProduct = (productId: number) => {
     try {
-      // TODO
-    } catch {
-      // TODO
-    }
+      if (cart.find(product => product.id === productId))
+        setCart(cart.filter((product) => {
+          return productId != product.id
+        }))
+      else
+        throw new Error('Produto não está no carrinho');
+    } catch (err) {
+      toast.error(err.message, {
+        position: "top-right",
+        autoClose: 2000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        });
+      }
   };
 
   const updateProductAmount = async ({
@@ -53,9 +97,28 @@ export function CartProvider({ children }: CartProviderProps): JSX.Element {
     amount,
   }: UpdateProductAmount) => {
     try {
-      // TODO
-    } catch {
-      // TODO
+      if (cart.find(product => product.id === productId))
+        api.get("stock/" + productId)
+        .then(response => {
+          const newCart = cart.map(product => {
+            if (product.id === productId && response.data.amount > product.amount + amount)
+              product.amount += amount
+            return product
+          })
+          setCart(newCart)
+        })
+      else
+        throw new Error('Produto não está no carrinho');
+    } catch (err) {
+      toast.error(err.message, {
+        position: "top-right",
+        autoClose: 2000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
     }
   };
 
