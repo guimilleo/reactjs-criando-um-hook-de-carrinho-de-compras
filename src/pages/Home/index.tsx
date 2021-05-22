@@ -26,37 +26,37 @@ const Home = (): JSX.Element => {
   const { addProduct, cart } = useCart();
 
   const cartItemsAmount = cart.reduce((sumAmount, product) => {
-    sumAmount[product.id] = product.amount
-    return sumAmount
+    const newSumAmount = {...sumAmount};
+    newSumAmount[product.id] = product.amount
+    return newSumAmount
   }, {} as CartItemsAmount)
 
   useEffect(() => {
-    api.get('products')
-      .then(response => {
-        setProducts(response.data)
-    })
-    // async function loadProducts() {
-    //     const response = api.get('products')
-    //       .then(response => {
-    //         setProducts(response.data)
-    //     })
-    // }
-    //loadProducts();
+    async function loadProducts() {
+        const response = await api.get<Product[]>('products');
+
+        const data = response.data.map(product => ({
+          ...product,
+          priceFormatted: formatPrice(product.price)
+        }));
+        setProducts(data);
+    }
+    loadProducts();
   }, []);
 
   function handleAddProduct(id: number) {
-    addProduct(id)
+    addProduct(id);
   }
 
   return (
     <ProductList>
       {
-        products.map( product => {
-        return ( 
+        products.map( product => 
+        ( 
           <li key={product.id}>
             <img src={product.image} alt={product.title} />
             <strong>{product.title}</strong>
-            <span>{formatPrice(product.price)}</span>
+            <span>{product.priceFormatted}</span>
             <button
               type="button"
               data-testid="add-product-button"
@@ -70,7 +70,8 @@ const Home = (): JSX.Element => {
               <span>ADICIONAR AO CARRINHO</span>
             </button>
           </li>
-        )})
+        )
+      )
       }
     </ProductList>
   );
